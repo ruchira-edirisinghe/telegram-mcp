@@ -13,7 +13,7 @@ import {
   type AwaySchedule,
   type AwayWindow,
 } from '../shared/away'
-import { isListed, type Config } from '../shared/config'
+import { inRefs, isListed, resolveRef, type Config } from '../shared/config'
 import { decideSend, withFooter } from '../shared/policy'
 import type { IncomingMessage, MessageInfo, PeerInfo, SentRecord, UiAway } from '../shared/protocol'
 import type { SessionHub } from './sessions'
@@ -107,6 +107,10 @@ export function uiAway(config: Config, me: { name: string } | null | undefined, 
       active: current?.schedule.id === s.id,
       preview: awayText(config, me, s),
     })),
+    skip: away.skip.map(ref => {
+      const r = resolveRef(config, ref)
+      return { ref, chatId: r.kind === 'entry' ? r.entry.id : r.kind === 'id' ? r.id : null }
+    }),
   }
 }
 
@@ -205,6 +209,8 @@ export class AwayResponder {
     // R4: the chat's rules. A Blocked chat (listed, or unlisted under defaultPolicy "block") never gets
     // one. Ask every time chats do: the reply is your own fixed text, so there is nothing to approve.
     if (decideSend(config, chat, { isWatching: false }).action === 'block') return { skip: 'blocked' }
+    // R4b: a chat you listed in away.skip never gets one, whatever its other rules.
+    if (inRefs(config, away.skip, chat)) return { skip: 'on the away skip list' }
     // R5: away now, not just when it was sent (a catch-up at 09:05 of a message from 08:58 is too late),
     // and the message came in during this same window.
     const now = this.#now()

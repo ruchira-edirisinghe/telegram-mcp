@@ -9,6 +9,25 @@ public class AwayTests
     static UiAway A(bool enabled = true, bool active = false) =>
         new(enabled, "18:00", "09:00", "m", 30, active, null, "p");
 
+    static UiAwaySkip Skip(string json, long? id) => new(System.Text.Json.JsonDocument.Parse(json).RootElement.Clone(), id);
+
+    [Fact]
+    public void Skip_list_is_read_and_switched_one_chat_at_a_time()
+    {
+        var a = A() with { Skip = [Skip("\"pahan\"", 5216006911), Skip("491741918", 491741918), Skip("\"@gone\"", null)] };
+        Assert.True(Away.Skips(a, 5216006911));
+        Assert.False(Away.Skips(a, 42));
+        Assert.False(Away.Skips(A(), 5216006911)); // an older daemon: no list
+
+        var off = Away.SkipWith(a, 5216006911, "pahan", skip: false);
+        Assert.Equal(["491741918", "\"@gone\""], off.Select(n => n!.ToJsonString()));
+        var on = Away.SkipWith(a, 42, "leo", skip: true);
+        Assert.Equal(["\"pahan\"", "491741918", "\"@gone\"", "\"leo\""], on.Select(n => n!.ToJsonString()));
+        // Switching on a chat already listed by id keeps one entry for it, by nickname.
+        Assert.Equal(["\"pahan\"", "\"@gone\"", "\"luigi\""],
+            Away.SkipWith(a, 491741918, "luigi", skip: true).Select(n => n!.ToJsonString()));
+    }
+
     [Fact]
     public void Status_says_off_away_now_or_when_it_starts()
     {

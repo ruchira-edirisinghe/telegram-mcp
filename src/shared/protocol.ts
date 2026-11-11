@@ -257,6 +257,11 @@ export interface UiAway {
   /** Chats whose reply is waiting for you right now (a schedule's delay). */
   waiting: number
   schedules: UiAwaySchedule[]
+  /**
+   * away.skip: chats that never get an away reply. `ref` as saved (send it back unchanged to keep it),
+   * `chatId` the saved chat it points at, or null when it names no saved chat.
+   */
+  skip: { ref: string | number; chatId: number | null }[]
 }
 
 export interface UiAwaySchedule {

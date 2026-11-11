@@ -137,6 +137,7 @@ describe('AwayResponder', () => {
     ['to self', () => msg({ ...ANNA, isSelf: true })],
     ['to outgoing messages', () => msg(ANNA, undefined, { outgoing: true })],
     ['to a blocked chat', () => { config = cfg({ blocked: [ANNA.id] }); return msg(ANNA) }],
+    ['to a chat on away.skip, even on Always allow', () => { config = cfg({ autoSend: [ANNA.id], away: { skip: [ANNA.id] } }); return msg(ANNA) }],
     ['to an unlisted chat when defaultPolicy is block', () => { config = cfg({ defaultPolicy: 'block' }); return msg(ANNA) }],
   ]
   for (const [name, build] of skipCases) {
@@ -146,6 +147,14 @@ describe('AwayResponder', () => {
       expect(tg.sent).toEqual([])
     })
   }
+
+  test('away.skip leaves everyone else alone', async () => {
+    config = cfg({ away: { skip: [ANNA.id] } })
+    const r = make()
+    expect(await r.onIncoming(msg(ANNA), false)).toBe('skipped')
+    expect(await r.onIncoming(msg(LEO), false)).toBe('sent')
+    expect(tg.sent).toHaveLength(1)
+  })
 
   test('an Ask every time chat gets one too: the reply is your own text, there is nothing to approve', async () => {
     config = cfg({ requireApproval: [ANNA.id] })

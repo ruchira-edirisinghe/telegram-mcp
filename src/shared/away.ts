@@ -173,6 +173,11 @@ export const AwaySchema = z.preprocess(
       /** Minutes after anything sent from your account in a chat (you or Claude; not the Page button) before an away reply is allowed; 0 turns that off. */
       quietMinutes: z.number({ error: QUIET_MSG }).int(QUIET_MSG).min(0, QUIET_MSG).max(1440, QUIET_MSG).default(30),
       schedules: z.array(AwayScheduleSchema, { error: 'schedules must be a list' }).max(12, '12 schedules at most.'),
+      /**
+       * Chats that never get an away reply (a nickname, @username or numeric id), such as a manager who
+       * shouldn't hear from a bot. Everything else about them is unchanged: sending, watching, auto-reply.
+       */
+      skip: z.array(z.union([z.string().min(1), z.number().int()]), { error: 'skip must be a list of chats' }).default([]),
     })
     .refine(a => new Set(a.schedules.map(s => s.id)).size === a.schedules.length, {
       message: 'Two schedules have the same id.',
@@ -185,14 +190,14 @@ export type AwayConfig = z.infer<typeof AwaySchema>
  * window an earlier build had: they change the schedule named by `schedule` (an id or a name), or
  * else the one the menu bar shows them from, primarySchedule (the menu bar app still sends them).
  */
-export type AwayPatch = Partial<Pick<AwayConfig, 'enabled' | 'quietMinutes'>> & {
+export type AwayPatch = Partial<Pick<AwayConfig, 'enabled' | 'quietMinutes' | 'skip'>> & {
   schedules?: unknown[]
   schedule?: string
   from?: string
   until?: string
   message?: string
 }
-const PATCH_KEYS = ['enabled', 'quietMinutes', 'schedules', 'schedule', 'from', 'until', 'message']
+const PATCH_KEYS = ['enabled', 'quietMinutes', 'skip', 'schedules', 'schedule', 'from', 'until', 'message']
 
 /**
  * The one schedule an older app or the CLI shows as "the" away window: the one that would reply now
@@ -215,7 +220,7 @@ export function applyAwayPatch(
   now: Date = new Date(),
 ): { ok: true; away: AwayConfig } | { ok: false; error: string } {
   if (typeof patch !== 'object' || patch === null || Array.isArray(patch) || Object.keys(patch).length === 0) {
-    return { ok: false, error: 'nothing to change: send enabled, quietMinutes or schedules' }
+    return { ok: false, error: 'nothing to change: send enabled, quietMinutes, skip or schedules' }
   }
   const unknown = Object.keys(patch).filter(k => !PATCH_KEYS.includes(k))
   if (unknown.length > 0) return { ok: false, error: `unknown setting: ${unknown.join(', ')}` }
@@ -223,6 +228,8 @@ export function applyAwayPatch(
   const next: Record<string, unknown> = { ...current, schedules: p.schedules ?? current.schedules.map(s => ({ ...s })) }
   if ('enabled' in p) next.enabled = p.enabled
   if ('quietMinutes' in p) next.quietMinutes = p.quietMinutes
+  // The whole list, replacing what is saved (the tray's per-chat switches send it back with one chat added or removed).
+  if ('skip' in p) next.skip = p.skip
   const legacy = LEGACY_KEYS.filter(k => k in p)
   if ('schedule' in p && (typeof p.schedule !== 'string' || legacy.length === 0)) {
     return { ok: false, error: 'schedule names the schedule that from, until or message change' }

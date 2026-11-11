@@ -257,6 +257,16 @@ public class DaemonApiTests
     }
 
     [Fact]
+    public async Task Save_away_sends_the_skip_list_as_given()
+    {
+        _net.Answer(HttpStatusCode.OK, """{"ok":true,"text":"done"}""");
+
+        await Api(new FakeTokens(Good)).SaveAwayAsync(new AwayChange(Skip: [System.Text.Json.Nodes.JsonValue.Create("pahan"), System.Text.Json.Nodes.JsonValue.Create(491741918L)]), Ct);
+
+        Assert.Equal("""{"skip":["pahan",491741918]}""", _net.Requests[0].Body);
+    }
+
+    [Fact]
     public async Task Save_footer_posts_the_text_and_the_switch()
     {
         _net.Answer(HttpStatusCode.OK, """{"ok":true,"text":"Saved. The footer is off."}""")

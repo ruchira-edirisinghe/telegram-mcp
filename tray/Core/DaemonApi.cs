@@ -51,7 +51,9 @@ public sealed record Decision(bool Approve, string? Remember = null, string? Nic
 /// <summary>An Away-page edit for POST /ui/away: only the fields that are set go in the body.</summary>
 public sealed record AwayChange(bool? Enabled = null, string? From = null, string? Until = null, string? Message = null, int? QuietMinutes = null,
     /// <summary>The whole list, replacing what is saved.</summary>
-    IReadOnlyList<ScheduleData>? Schedules = null);
+    IReadOnlyList<ScheduleData>? Schedules = null,
+    /// <summary>away.skip, the whole list, replacing what is saved.</summary>
+    IReadOnlyList<JsonNode?>? Skip = null);
 
 /// <summary>A Contacts-page edit; null fields stay as they are.</summary>
 public sealed record ContactChange(string Nickname, string? SendMode = null, bool? AutoReply = null, string? Rename = null, bool? PageFrom = null);
@@ -143,6 +145,7 @@ public sealed class DaemonApi(HttpClient http, int port, ITokenSource tokens, Ti
         if (change.Until is not null) body["until"] = change.Until;
         if (change.Message is not null) body["message"] = change.Message;
         if (change.QuietMinutes is { } quiet) body["quietMinutes"] = quiet;
+        if (change.Skip is { } skip) body["skip"] = new JsonArray(skip.Select(n => n?.DeepClone()).ToArray());
         if (change.Schedules is { } list)
         {
             var arr = new JsonArray();

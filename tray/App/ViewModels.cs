@@ -379,6 +379,7 @@ public sealed class ContactVM : Observable
     bool _busy;
     bool _paging;
     bool? _pending;
+    bool? _awayPending;
 
     public ContactVM(PanelViewModel panel, UiContact contact, string? defaultPolicy)
     {
@@ -401,6 +402,32 @@ public sealed class ContactVM : Observable
             var on = p is "on";
             if (on != Listens) _ = _panel.SetListeningAsync([Nickname], on, Nickname);
         });
+        ToggleAway = new Command(_ => _ = _panel.SetAwayReplyAsync(this, !GetsAway), _ => _awayPending is null);
+    }
+
+    /// <summary>The Away tab's switch: on while this person gets away replies, off while they're on away.skip.</summary>
+    public bool GetsAway => _awayPending ?? !_panel.AwaySkips(_c.ChatId);
+    public string AwayCaption => GetsAway ? "Gets away replies" : "Never gets an away reply";
+    public string AwayName => $"Away replies to {_c.Nickname}";
+    public ICommand ToggleAway { get; }
+    internal long ChatId => _c.ChatId;
+    /// <summary>A person other than you: the only chats an away reply can go to.</summary>
+    internal bool IsPerson => _c.Type is null or "user" && _c.Pageable != false;
+
+    /// <summary>The value the away switch is saving, or null once the poll after it shows what was saved.</summary>
+    internal bool? AwayPending
+    {
+        set
+        {
+            _awayPending = value;
+            AwayResync();
+        }
+    }
+
+    internal void AwayResync()
+    {
+        Raise(nameof(GetsAway));
+        Raise(nameof(AwayCaption));
     }
 
     /// <summary>

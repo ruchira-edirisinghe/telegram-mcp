@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
 namespace TelegramMCPTray.Core;
@@ -35,6 +37,20 @@ public static class Away
     public static readonly int[] Delays = [0, 30, 60, 120, 300];
     /// <summary>How soon a chat can get another reply, in minutes: once per period, after an hour, after 3 hours.</summary>
     public static readonly int[] Repeats = [0, 60, 180];
+
+    /// <summary>Is this chat on away.skip, so it never gets an away reply?</summary>
+    public static bool Skips(UiAway? a, long chatId) => a?.Skip?.Any(s => s.ChatId == chatId) == true;
+
+    /// <summary>
+    /// away.skip with one chat switched: every entry that points at it is dropped, and with <paramref name="skip"/>
+    /// its nickname goes back on once. Entries for other chats go back exactly as saved.
+    /// </summary>
+    public static List<JsonNode?> SkipWith(UiAway a, long chatId, string nickname, bool skip)
+    {
+        var list = (a.Skip ?? []).Where(s => s.ChatId != chatId).Select(s => JsonSerializer.SerializeToNode(s.Ref)).ToList();
+        if (skip) list.Add(JsonValue.Create(nickname));
+        return list;
+    }
 
     public static UiAwaySchedule? Current(UiAway a) =>
         a.Current is { } id ? a.Schedules?.FirstOrDefault(s => s.Id == id) : null;

@@ -210,9 +210,17 @@ describe('render and names', () => {
 })
 
 describe('applyAwayPatch', () => {
+  test('skip replaces the list, keeps the schedules, and must be chats', () => {
+    const r = applyAwayPatch(defaults, { skip: ['pahan', 491741918, '@lui747'] })
+    expect(r).toEqual({ ok: true, away: { ...defaults, skip: ['pahan', 491741918, '@lui747'] } })
+    expect(applyAwayPatch(defaults, { skip: 'pahan' }).ok).toBe(false)
+    expect(applyAwayPatch(defaults, { skip: [''] }).ok).toBe(false)
+    expect(defaults.skip).toEqual([])
+  })
+
   test('switches and quiet minutes', () => {
     expect(applyAwayPatch(defaults, { enabled: true })).toEqual({ ok: true, away: { ...defaults, enabled: true } })
-    expect(applyAwayPatch(defaults, {})).toEqual({ ok: false, error: 'nothing to change: send enabled, quietMinutes or schedules' })
+    expect(applyAwayPatch(defaults, {})).toEqual({ ok: false, error: 'nothing to change: send enabled, quietMinutes, skip or schedules' })
     expect(applyAwayPatch(defaults, 'x')).toMatchObject({ ok: false })
     expect(applyAwayPatch(defaults, { quietMinutes: -1 }).ok).toBe(false)
     expect(applyAwayPatch(defaults, { bogus: 1 })).toEqual({ ok: false, error: 'unknown setting: bogus' })

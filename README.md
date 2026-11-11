@@ -279,6 +279,7 @@ Up to 12 schedules. When two cover the same moment, the more specific one replie
 The rules, so it never gets in the way:
 
 - Only private chats with people: not groups, bots, Saved Messages, or Telegram's service and support accounts.
+- Never a chat on `away.skip`: people you never want an away reply to go to, such as a manager. Their other rules (sending, watching, auto-reply) stay as they are. Switch them off under **Who gets away replies** on the tray's Away tab, or list them (nickname, @username or id) in `config.json`.
 - Never a **Blocked** chat, nor a chat that isn't saved when `defaultPolicy` is `"block"`. **Ask every time** chats do get it: the reply is your own fixed text, so there is nothing to approve.
 - Once per chat per window (or per the schedule's repeat), and never twice to the same chat within 30 minutes, even across schedules (no Daytime reply at 20:59 and Night's at 21:01). At most 20 replies in any hour and 30 in one window in all, so a wave of messages doesn't look like spam from your account. A restart doesn't reset any of these.
 - Only while it's still the same away window: a message from 07:58 that the laptop picks up at 08:05 gets nothing, and one from 20:58 picked up at 21:01 gets neither reply.
@@ -302,6 +303,7 @@ tgmcp away message "Back soon."     # without a name: the schedule replying now
 "away": {
   "enabled": true,
   "quietMinutes": 30,
+  "skip": ["pahan", "@someone", 491741918],   // never get an away reply
   "schedules": [
     { "id": "day", "name": "Daytime", "enabled": true, "from": "08:00", "until": "21:00",
       "days": [0, 1, 2, 3, 4, 5, 6], "delaySeconds": 30, "repeatMinutes": 60, "message": "…" },

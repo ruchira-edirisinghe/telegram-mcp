@@ -1148,6 +1148,35 @@
 
                             <ItemsControl ItemsSource="{Binding Schedules}" ItemTemplate="{StaticResource ScheduleTemplate}" Focusable="False" />
 
+                            <!-- Who gets away replies: a saved person switched off is on away.skip and never gets one. -->
+                            <Border Style="{StaticResource CardStyle}" Margin="0,2,0,12">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource CardTitle}" Text="Who gets away replies" />
+                                    <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                               Text="Switch a person off and they never get an away reply. Sending, auto-reply and their other rules stay as they are." />
+                                    <TextBlock Text="{Binding AwayPeoplePlaceholder}" Style="{StaticResource Caption}" Foreground="{DynamicResource Fg2}" Margin="0,10,0,0"
+                                               TextWrapping="Wrap" Visibility="{Binding AwayPeoplePlaceholder, Converter={StaticResource IfSet}}" />
+                                    <ItemsControl ItemsSource="{Binding AwayPeople}" Focusable="False">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type local:ContactVM}">
+                                                <DockPanel Margin="0,10,0,0">
+                                                    <ToggleButton DockPanel.Dock="Right" Style="{StaticResource Switch}" Margin="8,0,0,0"
+                                                                  IsChecked="{Binding GetsAway, Mode=OneWay}" Command="{Binding ToggleAway}"
+                                                                  AutomationProperties.Name="{Binding AwayName}" />
+                                                    <Viewbox DockPanel.Dock="Left" Width="28" Height="28" Margin="0,0,10,0">
+                                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ContactAvatar}" Focusable="False" />
+                                                    </Viewbox>
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Nickname}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding AwayCaption}" FontSize="10" Foreground="{DynamicResource Fg3}" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
                             <!-- The rules every schedule follows. -->
                             <Border Style="{StaticResource CardStyle}" Margin="0,2,0,0">
                                 <StackPanel>
@@ -1161,7 +1190,7 @@
                                                 </DockPanel>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
-                                        <sys:String>Only people who message you privately get one. Groups, bots, Blocked chats and chats Claude is answering never do.</sys:String>
+                                        <sys:String>Only people who message you privately get one. Groups, bots, Blocked chats, people switched off above and chats Claude is answering never do.</sys:String>
                                         <sys:String>They go out on their own, without waiting for your approval, also in Ask every time chats.</sys:String>
                                         <sys:String>A schedule that waits gives you time: read any chat or send a message on Telegram, on any device, and nothing goes out.</sys:String>
                                         <sys:String>When two schedules overlap, the one with dates wins, then the shorter one.</sys:String>

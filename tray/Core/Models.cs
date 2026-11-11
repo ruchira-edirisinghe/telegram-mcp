@@ -93,7 +93,12 @@ public sealed record UiAway(
     /// <summary>Chats whose reply is waiting for you right now.</summary>
     int Waiting = 0,
     /// <summary>Null from a daemon older than schedules (it has one window: From, Until, Message).</summary>
-    IReadOnlyList<UiAwaySchedule>? Schedules = null);
+    IReadOnlyList<UiAwaySchedule>? Schedules = null,
+    /// <summary>away.skip: chats that never get an away reply. Null from a daemon older than the skip list.</summary>
+    IReadOnlyList<UiAwaySkip>? Skip = null);
+
+/// <summary>One away.skip entry: the ref as saved (a nickname, @username or id) and the saved chat it points at, if any.</summary>
+public sealed record UiAwaySkip(JsonElement Ref, long? ChatId);
 
 /// <summary>One away schedule (UiAwaySchedule in src/shared/protocol.ts). Days: 0 = Sunday … 6 = Saturday.</summary>
 public sealed record UiAwaySchedule(

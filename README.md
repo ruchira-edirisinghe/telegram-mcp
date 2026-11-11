@@ -4,6 +4,18 @@
 
 # telegram-mcp
 
+> **This fork's `local/install` branch** is upstream ([iddhi-sulakshana/telegram-mcp](https://github.com/iddhi-sulakshana/telegram-mcp)) plus the away filter (`away.skip`: chats that never get an away reply, switchable on the tray's Away tab, from `feat/away-skip-chats`). The away filter stays in this fork and is not offered upstream.
+>
+> Install from this branch so the away filter comes with it. On Windows, from a clone of this fork:
+>
+> ```powershell
+> git clone -b local/install https://github.com/ruchira-edirisinghe/telegram-mcp.git
+> cd telegram-mcp
+> powershell -ExecutionPolicy Bypass -File scripts\install-local.ps1
+> ```
+>
+> The script merges the latest upstream, refuses to install a build without the away filter, runs the away and tray tests, builds `tgmcp.exe` and the tray app, swaps them into `%LOCALAPPDATA%\Programs\tgmcp` and restarts them. Elsewhere, `bun install && bun link` from this branch works as below. Upstream's release installer does not include the away filter.
+
 Telegram for Claude Code, through **one always-on daemon** instead of a Telegram connection per session.
 
 ```

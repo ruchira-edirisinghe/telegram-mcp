@@ -3,6 +3,10 @@
 Each release's section here becomes its "What's new" on GitHub. Add the next one as
 `## <version>` before tagging (see [Releasing](README.md#releasing)).
 
+## Unreleased
+
+- **Choose who never gets an away reply**: `away.skip` in `config.json` lists chats (nickname, @username or id) that never get an away reply, such as a manager, whatever their other rules. Sending, watching and auto-reply there are unchanged. On the tray's Away tab, **Who gets away replies** lists every saved person with a switch. Renaming a contact keeps them on the list, and a name only `away.skip` mentions can't be given to another chat, the same guard the rule lists have. The macOS menu bar's Away page doesn't show the list yet but keeps it when it saves.
+
 ## 1.2.0
 
 - **Heads-up: a fresh `away on` now replies around the clock**: on a new install, or a `config.json` with no `away`, switching away on turns on both **Daytime** (08:00–21:00) and **Night** (21:00–08:00), so someone who writes gets a reply at any hour. Under `defaultPolicy: "approve"` (the default) that includes strangers, chats on none of your lists, as away replies already did at night. Switch off the schedule you don't want on the tray's Away tab, or set `defaultPolicy` to `"block"` so only chats on your lists get away replies. An older `config.json` with its own away hours keeps them.

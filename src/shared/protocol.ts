@@ -259,7 +259,8 @@ export interface UiAway {
   schedules: UiAwaySchedule[]
   /**
    * away.skip: chats that never get an away reply. `ref` as saved (send it back unchanged to keep it),
-   * `chatId` the saved chat it points at, or null when it names no saved chat.
+   * `chatId` the chat it points at (a saved chat's id, or a numeric ref's own id even when that chat
+   * isn't saved), or null when it names no chat yet (an unsaved nickname or @username).
    */
   skip: { ref: string | number; chatId: number | null }[]
 }

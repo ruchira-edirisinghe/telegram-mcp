@@ -202,12 +202,16 @@ function byId(config: Config, id: number): Resolved {
   return { kind: 'id', id }
 }
 
-/** Every rules list that mentions this name as a plain string ref (nickname/alias). */
-export function rulesMentioning(config: Config, name: string): RuleList[] {
+/**
+ * Every rules list that mentions this name as a plain string ref (nickname/alias), and "away.skip"
+ * when that list does: a name there decides who never gets an away reply, so it is guarded the same way.
+ */
+export function rulesMentioning(config: Config, name: string): (RuleList | 'away.skip')[] {
   const n = normalizeNickname(name)
-  return RULE_LISTS.filter(list =>
-    config.rules[list].some(ref => typeof ref === 'string' && normalizeNickname(ref) === n),
-  )
+  const named = (refs: readonly ChatRef[]) => refs.some(ref => typeof ref === 'string' && normalizeNickname(ref) === n)
+  const lists: (RuleList | 'away.skip')[] = RULE_LISTS.filter(list => named(config.rules[list]))
+  if (named(config.away.skip)) lists.push('away.skip')
+  return lists
 }
 
 /** A name no other chat, alias or rule uses yet. */

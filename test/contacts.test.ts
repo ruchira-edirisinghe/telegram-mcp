@@ -164,6 +164,13 @@ describe('renameContact', () => {
     expect(() => renameContact(c, 'anna', 'bob')).toThrow('autoSend')
     expect(c.chats.anna).toBeDefined()
   })
+
+  test('away.skip follows a rename, and a name only away.skip mentions is refused too', () => {
+    const c = parseConfig(JSON.stringify({ chats: { anna: { id: 12 }, leo: { id: 10 } }, away: { skip: ['anna', 'bob', 99] } }))
+    expect(renameContact(c, 'anna', 'annie')).toBe('annie')
+    expect(c.away.skip).toEqual(['annie', 'bob', 99])
+    expect(() => renameContact(c, 'leo', 'bob')).toThrow('away.skip')
+  })
 })
 
 describe('setPageFrom', () => {

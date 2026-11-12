@@ -676,16 +676,25 @@ public sealed class PanelViewModel : Observable
 
     internal bool AwaySkips(long chatId) => Away.Skips(State?.Away, chatId);
 
+    /// <summary>
+    /// True from a skip switch's save until the poll after it: the next switch builds its list from
+    /// State.Away.Skip, so it has to wait for the saved list or it would send the old one back.
+    /// </summary>
+    internal bool SkipBusy => _skipBusy;
+    bool _skipBusy;
+
     /// <summary>A person's away switch: off puts them on away.skip, on takes them off. Saved at once.</summary>
     public async Task SetAwayReplyAsync(ContactVM vm, bool gets)
     {
-        if (State?.Away is not { Skip: not null } a || _awaySaving)
+        if (State?.Away is not { Skip: not null } a || _awaySaving || _skipBusy)
         {
             if (State?.Away is { Skip: null }) ShowFlash(Away.OlderDaemon, false);
             vm.AwayResync();
             return;
         }
+        _skipBusy = true;
         vm.AwayPending = gets;
+        CommandManager.InvalidateRequerySuggested();
         try
         {
             await SaveAwayChangeAsync(new AwayChange(Skip: Away.SkipWith(a, vm.ChatId, vm.Nickname, skip: !gets)), null,
@@ -694,7 +703,9 @@ public sealed class PanelViewModel : Observable
         }
         finally
         {
+            _skipBusy = false;
             vm.AwayPending = null;
+            CommandManager.InvalidateRequerySuggested();
         }
     }
 

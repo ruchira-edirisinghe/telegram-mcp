@@ -402,7 +402,7 @@ public sealed class ContactVM : Observable
             var on = p is "on";
             if (on != Listens) _ = _panel.SetListeningAsync([Nickname], on, Nickname);
         });
-        ToggleAway = new Command(_ => _ = _panel.SetAwayReplyAsync(this, !GetsAway), _ => _awayPending is null);
+        ToggleAway = new Command(_ => _ = _panel.SetAwayReplyAsync(this, !GetsAway), _ => _awayPending is null && !_panel.SkipBusy);
     }
 
     /// <summary>The Away tab's switch: on while this person gets away replies, off while they're on away.skip.</summary>
